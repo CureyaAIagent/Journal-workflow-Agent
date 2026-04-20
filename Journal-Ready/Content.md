@@ -2,6 +2,8 @@
 
 ## OBJECTIVE
 Make manuscript journal-ready using:
+- given prompt + manuscript
+- extract paper + journal id
 - Excel rules (must)
 - skill routing (must)
 - controller loop
@@ -11,7 +13,7 @@ Make manuscript journal-ready using:
 ## DEPENDENCY
 Needs:
 - controller.md
-- journal-workflow-agent/integrated/skill.md  ← (MASTER SKILL ROUTER)
+- journal-workflow-agent/integrated/skill.md
 - memory.md
 - journal_excel_data
 
@@ -19,14 +21,12 @@ Needs:
 
 ## RULE (STRICT)
 ALL skills via:
-
 → journal-workflow-agent/integrated/skill.md
-
-NO direct calls  
-NO bypass  
 
 Flow:
 controller → skill.md → tools
+
+NO direct calls
 
 ---
 
@@ -41,9 +41,7 @@ If no Excel:
 
 ## INPUT
 {
- "paper_id":"str",
  "manuscript_text":"str",
- "target_journal":"str",
  "instruction_prompt":"str",
  "journal_excel_data":"file"
 }
@@ -52,6 +50,8 @@ If no Excel:
 
 ## OUTPUT
 {
+ "paper_id":"str",
+ "journal_id":"str",
  "final_manuscript":"str",
  "validation":{
   "ai":"<10",
@@ -71,20 +71,32 @@ If no Excel:
 
 ## FLOW
 
-### STEP 1 — MAP
-→ read Excel  
+### STEP 0 — EXTRACT
+→ from prompt + manuscript:
+
+- paper_id
+- journal_id
+
+→ match journal_id in Excel  
+→ extract journal_rules  
+
 → save memory  
 
 OUT:
 {
- "step":"map",
+ "step":"extract",
  "ok":true,
- "data":{"rules":{}}
+ "data":{
+  "paper_id":"str",
+  "journal_id":"str",
+  "rules":{}
+ }
 }
 
 ---
 
-### STEP 2 — STRUCTURE
+### STEP 1 — STRUCTURE
+→ apply journal_rules  
 → format manuscript  
 
 OUT:
@@ -96,7 +108,7 @@ OUT:
 
 ---
 
-### STEP 3 — REFERENCES
+### STEP 2 — REFERENCES
 → via journal-workflow-agent/integrated/skill.md:
  - reference_reconciliation_engine
  - doi_reference_validator
@@ -114,7 +126,7 @@ OUT:
 
 ---
 
-### STEP 4 — QUALITY
+### STEP 3 — QUALITY
 → via journal-workflow-agent/integrated/skill.md:
  - plagiarism_reference_integrity_analyzer
  - ai_content_detection_system
@@ -131,7 +143,7 @@ OUT:
 
 ---
 
-### STEP 5 — OPTIMIZE
+### STEP 4 — OPTIMIZE
 → via journal-workflow-agent/integrated/skill.md:
  - ai_humanization_engine
  - academic_language_optimizer
@@ -145,9 +157,9 @@ OUT:
 
 ---
 
-### STEP 6 — DIAGRAM
+### STEP 5 — DIAGRAM
 IF no visuals:
-→ via journal-workflow-agent/integrated/skill.md:
+→ via skill.md:
  - research_diagram_toolkit
 
 OUT:
@@ -159,7 +171,7 @@ OUT:
 
 ---
 
-### STEP 7 — FINAL
+### STEP 6 — FINAL CHECK
 Need:
 - ai <10
 - plag <10
@@ -190,6 +202,8 @@ ai<10 && plag<10 && doi=100 && citation=100
 
 ## MEMORY
 Store:
+- paper_id
+- journal_id
 - rules
 - manuscript
 - scores
